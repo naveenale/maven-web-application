@@ -1,0 +1,26 @@
+input {
+      s3 {
+        access_key_id => "AKIATUQGDAH24AAHUUDU"
+        secret_access_key => "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"
+        bucket => "elklogss"
+        region => "ap-south-1"
+        additional_settings => {
+        force_path_style => true
+        follow_redirects => false
+        }
+ }
+    }
+
+filter {
+grok {
+match => ["message", "%{TIMESTAMP_ISO8601:timestamp} %{NOTSPACE:loadbalancer} %{IP:client_ip}:%{NUMBER:client_port:int} (?:%{IP:backend_ip}:%{NUMBER:backend_port:int}|-) %{NUMBER:request_processing_time:float} %{NUMBER:backend_processing_time:float} %{NUMBER:response_processing_time:float} (?:%{NUMBER:elb_status_code:int}|-) (?:%{NUMBER:backend_status_code:int}|-) %{NUMBER:received_bytes:int} %{NUMBER:sent_bytes:int} \"(?:%{WORD:verb}|-) (?:%{GREEDYDATA:request}|-) (?:HTTP/%{NUMBER:httpversion}|-( )?)\" \"%{DATA:userAgent}\"( %{NOTSPACE:ssl_cipher} %{NOTSPACE:ssl_protocol})?"]
+  }
+  }
+
+output {
+stdout { codec => rubydebug }
+ elasticsearch {
+ hosts => ["localhost:9200"]
+ index => "elblogs"
+ }
+}
